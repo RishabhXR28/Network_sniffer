@@ -1,0 +1,71 @@
+from scapy.all import sniff, IP, TCP, UDP, ICMP
+
+tcp_count = 0
+udp_count = 0
+icmp_count = 0
+other_count = 0
+
+def packet_callback(packet):
+    global tcp_count, udp_count, icmp_count, other_count
+
+    print("\n" + "=" * 50)
+
+    if IP in packet:
+        print("Packet Captured")
+        print(f"Source IP        : {packet[IP].src}")
+        print(f"Destination IP   : {packet[IP].dst}")
+
+        if TCP in packet:
+            tcp_count += 1
+            print("Protocol         : TCP")
+            print(f"Source Port      : {packet[TCP].sport}")
+            print(f"Destination Port : {packet[TCP].dport}")
+
+        elif UDP in packet:
+            udp_count += 1
+            print("Protocol         : UDP")
+            print(f"Source Port      : {packet[UDP].sport}")
+            print(f"Destination Port : {packet[UDP].dport}")
+
+        elif ICMP in packet:
+            icmp_count += 1
+            print("Protocol         : ICMP")
+
+        else:
+            other_count += 1
+            print(f"Protocol Number  : {packet[IP].proto}")
+
+        print(f"Packet Summary   : {packet.summary()}")
+
+    else:
+        other_count += 1
+        print("Non-IP Packet")
+        print(packet.summary())
+
+
+def show_summary():
+    print("\n" + "=" * 50)
+    print("Packet Capture Summary")
+    print("=" * 50)
+    print(f"TCP Packets   : {tcp_count}")
+    print(f"UDP Packets   : {udp_count}")
+    print(f"ICMP Packets  : {icmp_count}")
+    print(f"Other Packets : {other_count}")
+    print("=" * 50)
+
+
+def start_sniffer():
+    print("Basic Network Sniffer Started...")
+    print("Capturing 30 packets only...")
+    print("Press Ctrl + C to stop manually.\n")
+
+    try:
+        sniff(prn=packet_callback, store=False, count=30)
+    except KeyboardInterrupt:
+        print("\nSniffing stopped manually.")
+
+    show_summary()
+
+
+if __name__ == "__main__":
+    start_sniffer()
